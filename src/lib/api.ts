@@ -472,6 +472,8 @@ export interface OrgPaypointDetail {
     status: 'draft' | 'published' | 'archived';
     restriction: string;
     link: string;
+    createdAt: string;
+    updatedAt: string;
   };
   transactions: OrgPaypointTransaction[];
 }
