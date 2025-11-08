@@ -10,9 +10,15 @@ const PORT = process.env.PORT || 4000;
 
 const app = express();
 
-const corsOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
-  : ['https://mypaypoint.onrender.com', 'https://mypaypoint.netlify.app'];
+const defaultCorsOrigins = [
+  'https://mypaypoint.onrender.com',
+  'https://mypaypoint.netlify.app',
+  'https://mypaypointserver.onrender.com',
+];
+const envCorsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : [];
+const corsOrigins = Array.from(new Set([...defaultCorsOrigins, ...envCorsOrigins]));
 
 app.use(
   cors({
