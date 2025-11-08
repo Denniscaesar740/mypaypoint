@@ -13,7 +13,7 @@ export class ApiError extends Error {
 export const API_BASE_URL =
   (typeof import.meta !== 'undefined'
     ? (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL
-    : undefined) || 'http://localhost:4000';
+    : undefined) || 'https://mypaypointserver.onrender.com';
 
 type RequestConfig = RequestInit & {
   token?: string;

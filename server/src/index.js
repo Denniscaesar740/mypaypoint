@@ -12,7 +12,7 @@ const app = express();
 
 const corsOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
-  : ['http://localhost:5173', 'http://localhost:4173', 'https://mypaypoint.onrender.com'];
+  : ['https://mypaypoint.onrender.com', 'https://mypaypoint.netlify.app'];
 
 app.use(
   cors({
