@@ -3,8 +3,14 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDistPath = path.resolve(__dirname, '..', '..', 'dist');
 
 const PORT = process.env.PORT || 4000;
 
@@ -33,6 +39,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use(express.static(clientDistPath, { index: false }));
 
 const users = [
   {
@@ -2020,6 +2027,13 @@ app.get('/analytics/summary', authMiddleware, (_req, res) => {
     console.error('[analytics/summary] failed:', error);
     res.status(500).json({ message: 'Unable to load analytics.' });
   }
+});
+
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  res.sendFile(path.join(clientDistPath, 'index.html'));
 });
 
 app.use((_req, res) => {
