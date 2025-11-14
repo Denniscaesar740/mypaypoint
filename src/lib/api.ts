@@ -10,10 +10,20 @@ export class ApiError extends Error {
   }
 }
 
+const resolveDefaultApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname.toLowerCase();
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:4000';
+    }
+  }
+  return 'https://mypaypoint.onrender.com';
+};
+
 export const API_BASE_URL =
   (typeof import.meta !== 'undefined'
     ? (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL
-    : undefined) || 'https://mypaypointserver.onrender.com';
+    : undefined) || resolveDefaultApiBaseUrl();
 
 type RequestConfig = RequestInit & {
   token?: string;
