@@ -2052,6 +2052,14 @@ const resolveClientHtml = (pathname) => {
     return routeToHtmlMap.get(normalizedPath);
   }
 
+  if (/^\/super-admin(\/.*)?$/.test(pathname)) {
+    return routeToHtmlMap.get('/super-admin') || 'index.html';
+  }
+
+  if (/^\/org-admin(\/.*)?$/.test(pathname)) {
+    return routeToHtmlMap.get('/org-admin') || 'index.html';
+  }
+
   if (/^\/paypoint\/review(\/.*)?$/.test(pathname)) {
     return 'paypoint-review.html';
   }

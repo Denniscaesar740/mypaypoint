@@ -24,6 +24,18 @@
     "description": "Track payments, logins, and adoption with PayPoint's analytics dashboards."
   },
   {
+    "path": "/super-admin",
+    "filename": "super-admin.html",
+    "title": "Super Admin Dashboard | PayPoint",
+    "description": "Review campus-wide organizations, approvals, and platform analytics from the Super Admin workspace."
+  },
+  {
+    "path": "/org-admin",
+    "filename": "org-admin.html",
+    "title": "Organization Admin Dashboard | PayPoint",
+    "description": "Manage your association's paypoints, transactions, and team settings inside the Organization Admin dashboard."
+  },
+  {
     "path": "/how-it-works",
     "filename": "how-it-works.html",
     "title": "How It Works | PayPoint",
