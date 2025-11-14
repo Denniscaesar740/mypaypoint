@@ -2052,10 +2052,6 @@ const resolveClientHtml = (pathname) => {
     return routeToHtmlMap.get(normalizedPath);
   }
 
-  if (/^\/dashboard(\/.*)?$/.test(pathname)) {
-    return 'dashboard.html';
-  }
-
   if (/^\/paypoint\/review(\/.*)?$/.test(pathname)) {
     return 'paypoint-review.html';
   }

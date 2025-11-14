@@ -54,24 +54,6 @@
     "description": "Securely sign in to your PayPoint dashboard or organization view."
   },
   {
-    "path": "/dashboard",
-    "filename": "dashboard.html",
-    "title": "Dashboards | PayPoint",
-    "description": "Access the explorer page that links to the Super Admin and Organization Admin dashboards."
-  },
-  {
-    "path": "/dashboard/super-admin",
-    "filename": "dashboard-super-admin.html",
-    "title": "Super Admin Dashboard | PayPoint",
-    "description": "Manage organizations, approvals, and platform metrics from the super admin console."
-  },
-  {
-    "path": "/dashboard/org-admin",
-    "filename": "dashboard-org-admin.html",
-    "title": "Organization Admin Dashboard | PayPoint",
-    "description": "Launch PayPoints, review transactions, and keep members on track from the org admin hub."
-  },
-  {
     "path": "/paypoint",
     "filename": "paypoint.html",
     "title": "PayPoint | PayPoint",

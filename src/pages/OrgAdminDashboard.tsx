@@ -1,4 +1,4 @@
-Ôªø
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -259,7 +259,7 @@ const OrgAdminDashboard: React.FC = () => {
   };
 
   const handleCopyBuilderPreview = async (paypointId: string) => {
-    const previewUrl = `${window.location.origin}/dashboard/org-admin/paypoints/${paypointId}/builder/live`;
+    const previewUrl = `${window.location.origin}/org-admin/paypoints/${paypointId}/builder/live`;
     try {
       await navigator.clipboard.writeText(previewUrl);
       setPreviewClipboardId(paypointId);
@@ -391,7 +391,7 @@ const OrgAdminDashboard: React.FC = () => {
     {
       title: 'Active PayPoints',
       value: stats.activePaypoints ?? 0,
-      change: `${publishedCount} live ‚Ä¢ ${draftCount} drafts`,
+      change: `${publishedCount} live ï ${draftCount} drafts`,
       icon: Globe,
       accent: 'blue' as const,
     },
@@ -422,7 +422,7 @@ const OrgAdminDashboard: React.FC = () => {
               <p className="text-xs uppercase tracking-[0.2em] text-white/60">Org admin workspace</p>
               <h1 className="text-3xl font-semibold text-white sm:text-4xl">{overview.organization?.name ?? 'Organization'}</h1>
               <p className="text-sm text-slate-400">
-                {overview.organization?.category ?? 'Community'} ‚Ä¢ {publishedCount} live PayPoints ‚Ä¢ synced {lastSync}
+                {overview.organization?.category ?? 'Community'} ï {publishedCount} live PayPoints ï synced {lastSync}
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-white/70">
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1">
@@ -546,7 +546,7 @@ const OrgAdminDashboard: React.FC = () => {
                       <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
                         <button
                           type="button"
-                          onClick={() => navigate(`/dashboard/org-admin/paypoints/${paypoint.id}/builder`)}
+                          onClick={() => navigate(`/org-admin/paypoints/${paypoint.id}/builder`)}
                           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-3 py-2 text-sm font-medium text-white transition hover:border-indigo-400/60"
                         >
                           <Palette className="h-4 w-4 text-indigo-300" />
@@ -554,7 +554,7 @@ const OrgAdminDashboard: React.FC = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => navigate(`/dashboard/org-admin/paypoints/${paypoint.id}/transactions`)}
+                          onClick={() => navigate(`/org-admin/paypoints/${paypoint.id}/transactions`)}
                           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-3 py-2 text-sm font-medium text-white transition hover:border-indigo-400/60"
                         >
                           <Receipt className="h-4 w-4 text-emerald-300" />
@@ -648,16 +648,16 @@ const OrgAdminDashboard: React.FC = () => {
                       <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-white/60">
                         <button
                           type="button"
-                          onClick={() => navigate(`/dashboard/org-admin/paypoints/${transaction.paypointId}/transactions`)}
+                          onClick={() => navigate(`/org-admin/paypoints/${transaction.paypointId}/transactions`)}
                           className="inline-flex items-center gap-1 rounded-full border border-white/15 px-3 py-1 font-medium text-white transition hover:border-indigo-400/60"
                         >
                           View details
                         </button>
-                        <span className="text-white/40">‚Ä¢</span>
+                        <span className="text-white/40">ï</span>
                         <span>{transaction.paypointTitle}</span>
                         {transaction.method && (
                           <>
-                            <span className="text-white/40">‚Ä¢</span>
+                            <span className="text-white/40">ï</span>
                             <span>{transaction.method}</span>
                           </>
                         )}
@@ -795,7 +795,7 @@ const OrgAdminDashboard: React.FC = () => {
               <div className="space-y-4">
                 <p className="text-xs uppercase tracking-[0.3em] text-white/50">Members</p>
                 <div className="max-h-[360px] space-y-4 overflow-y-auto pr-2">
-                  {team.length === 0 && <p className="text-sm text-white/60">No teammates yet ‚Äî invite your first collaborator.</p>}
+                  {team.length === 0 && <p className="text-sm text-white/60">No teammates yet ó invite your first collaborator.</p>}
                   {team.map((member) => (
                     <div key={member.id} className="rounded-2xl border border-white/10 bg-slate-900/40 p-4">
                       <div className="flex items-start justify-between gap-3">
@@ -921,7 +921,7 @@ const OrgAdminDashboard: React.FC = () => {
                       <p className="text-xs text-white/70">{entry.description}</p>
                       <div className="mt-1 text-[11px] text-white/50">
                         <span>{entry.actor}</span>
-                        <span className="mx-2 text-white/30">‚Ä¢</span>
+                        <span className="mx-2 text-white/30">ï</span>
                         <span>{formatRelative(entry.timestamp)}</span>
                       </div>
                     </div>
@@ -946,7 +946,7 @@ const OrgAdminDashboard: React.FC = () => {
                 </p>
               </div>
               <p className="mt-4 text-xs text-white/60">
-                Need a public preview? Use the ‚ÄúLive preview‚Äù button on each PayPoint card. Those URLs stay in sync in real time, matching the builder configuration exactly.
+                Need a public preview? Use the ìLive previewî button on each PayPoint card. Those URLs stay in sync in real time, matching the builder configuration exactly.
               </p>
             </div>
           </div>

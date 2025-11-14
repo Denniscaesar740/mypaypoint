@@ -65,7 +65,7 @@ const PaypointBuilderPreview: React.FC = () => {
       setBuilderData(builder);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Unable to load builder preview.');
-      navigate('/dashboard/org-admin');
+      navigate('/org-admin');
     }
   }, [token, paypointId, navigate]);
 

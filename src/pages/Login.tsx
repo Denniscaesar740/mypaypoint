@@ -52,9 +52,9 @@ const Login: React.FC = () => {
 
       toast.success('Signed in successfully!');
       if (response.user.role === 'super-admin') {
-        redirectTo('/dashboard/super-admin');
+        redirectTo('/super-admin');
       } else if (response.user.role === 'organization-admin') {
-        redirectTo('/dashboard/org-admin');
+        redirectTo('/org-admin');
       } else {
         redirectTo('/');
       }

@@ -153,7 +153,7 @@ const PaypointTransactionsPage: React.FC = () => {
         <div className="rounded-3xl border border-white/10 bg-white/5 px-8 py-10 text-center shadow-[0_25px_55px_rgba(15,23,42,0.45)]">
           <p className="text-sm text-white/70">Unable to load PayPoint transactions.</p>
           <button
-            onClick={() => navigate('/dashboard/org-admin')}
+            onClick={() => navigate('/org-admin')}
             className="mt-4 rounded-2xl border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-indigo-400/60 hover:bg-indigo-500/10"
           >
             Back to dashboard
@@ -171,7 +171,7 @@ const PaypointTransactionsPage: React.FC = () => {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/dashboard/org-admin')}
+              onClick={() => navigate('/org-admin')}
               className="rounded-2xl border border-white/15 p-2 text-white/70 transition hover:border-indigo-400/60 hover:text-white"
             >
               <ArrowLeft className="h-5 w-5" />

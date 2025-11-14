@@ -34,11 +34,11 @@ const App: React.FC = () => {
             <Route path="/platform-structure" element={<PlatformStructure />} />
             <Route path="/core-functionalities" element={<CoreFunctionalities />} />
             <Route path="/analytics-insights" element={<AnalyticsInsights />} />
-            <Route path="/dashboard/super-admin" element={<SuperAdminDashboard />} />
-            <Route path="/dashboard/org-admin" element={<OrgAdminDashboard />} />
-            <Route path="/dashboard/org-admin/paypoints/:paypointId/builder" element={<PaypointBuilder />} />
-            <Route path="/dashboard/org-admin/paypoints/:paypointId/builder/live" element={<PaypointBuilderPreview />} />
-            <Route path="/dashboard/org-admin/paypoints/:paypointId/transactions" element={<PaypointTransactionsPage />} />
+            <Route path="/super-admin" element={<SuperAdminDashboard />} />
+            <Route path="/org-admin" element={<OrgAdminDashboard />} />
+            <Route path="/org-admin/paypoints/:paypointId/builder" element={<PaypointBuilder />} />
+            <Route path="/org-admin/paypoints/:paypointId/builder/live" element={<PaypointBuilderPreview />} />
+            <Route path="/org-admin/paypoints/:paypointId/transactions" element={<PaypointTransactionsPage />} />
             <Route path="/paypoint/*" element={<PayPointPage />} />
             <Route path="/paypoint/review/*" element={<PaypointReviewPage />} />
             <Route path="/how-it-works" element={<HowItWorks />} />

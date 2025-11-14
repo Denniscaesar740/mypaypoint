@@ -110,7 +110,7 @@ const PaypointBuilder: React.FC = () => {
       setIsDirty(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Unable to load builder.');
-      navigate('/dashboard/org-admin');
+      navigate('/org-admin');
     } finally {
       setIsLoading(false);
     }
@@ -335,7 +335,7 @@ const handleFieldUpdate = (sectionId: string, fieldId: string, updates: Partial<
 
   const openLivePreview = () => {
     if (!paypointId) return;
-    navigate(`/dashboard/org-admin/paypoints/${paypointId}/builder/live`);
+    navigate(`/org-admin/paypoints/${paypointId}/builder/live`);
   };
 
   const handlePreviewFieldChange = (field: BuilderField, value: string | boolean) => {
@@ -497,7 +497,7 @@ const handleFieldUpdate = (sectionId: string, fieldId: string, updates: Partial<
       <div className="relative">
       <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
         <button
-          onClick={() => navigate('/dashboard/org-admin')}
+          onClick={() => navigate('/org-admin')}
           className="inline-flex items-center text-sm font-semibold text-white/70 hover:text-white"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
