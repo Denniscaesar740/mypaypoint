@@ -34,6 +34,8 @@ import {
   updateOrgPaypointStatus,
 } from '../lib/api';
 
+import { buildShareUrl } from '../lib/url';
+
 type SessionInfo = {
   token: string;
   user: {
@@ -247,7 +249,7 @@ const OrgAdminDashboard: React.FC = () => {
   };
 
   const handleCopyLink = async (slug: string, paypointId: string) => {
-    const shareUrl = `${window.location.origin.replace(/\/$/, '')}/paypoint/${slug}`;
+    const shareUrl = buildShareUrl(`/paypoint/${slug}`);
     try {
       await navigator.clipboard.writeText(shareUrl);
       setClipboardId(paypointId);
@@ -259,7 +261,7 @@ const OrgAdminDashboard: React.FC = () => {
   };
 
   const handleCopyBuilderPreview = async (paypointId: string) => {
-    const previewUrl = `${window.location.origin}/org-admin/paypoints/${paypointId}/builder/live`;
+    const previewUrl = buildShareUrl(`/org-admin/paypoints/${paypointId}/builder/live`);
     try {
       await navigator.clipboard.writeText(previewUrl);
       setPreviewClipboardId(paypointId);

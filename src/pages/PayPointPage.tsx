@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { getPublicPaypoint } from '../lib/api';
+import { buildShareUrl } from '../lib/url';
 import type {
   BuilderField,
   BuilderResponseValues,
@@ -91,7 +92,7 @@ const PayPointPage: React.FC = () => {
   const handleCopyLink = async () => {
     if (!slug) return;
     try {
-      const shareUrl = `${window.location.origin.replace(/\/$/, '')}/paypoint/${slug}`;
+      const shareUrl = buildShareUrl(`/paypoint/${slug}`);
       await navigator.clipboard.writeText(shareUrl);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
