@@ -1856,7 +1856,7 @@ app.delete('/org/team/:id', authMiddleware, requireOrgAdmin, (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/paypoint/*', (req, res) => {
+app.get('/api/paypoint/*', (req, res) => {
   const slug = req.params[0];
   const paypoint = findPaypointBySlug(slug);
   if (!paypoint) {
@@ -1908,7 +1908,7 @@ app.get('/paypoint/*', (req, res) => {
   });
 });
 
-app.post('/paypoint/*/pay', (req, res) => {
+app.post('/api/paypoint/*/pay', (req, res) => {
   const slug = req.params[0];
   const paypoint = findPaypointBySlug(slug);
   if (!paypoint) {
