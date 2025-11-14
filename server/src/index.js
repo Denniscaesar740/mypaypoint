@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,7 +11,6 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const clientDistPath = path.resolve(__dirname, '..', '..', 'dist');
-const clientIndexFile = path.join(clientDistPath, 'index.html');
 
 const PORT = process.env.PORT || 4000;
 
@@ -1858,7 +1856,7 @@ app.delete('/org/team/:id', authMiddleware, requireOrgAdmin, (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/paypoint/*', (req, res) => {
+app.get('/paypoint/*', (req, res) => {
   const slug = req.params[0];
   const paypoint = findPaypointBySlug(slug);
   if (!paypoint) {
@@ -1910,7 +1908,7 @@ app.get('/api/paypoint/*', (req, res) => {
   });
 });
 
-app.post('/api/paypoint/*/pay', (req, res) => {
+app.post('/paypoint/*/pay', (req, res) => {
   const slug = req.params[0];
   const paypoint = findPaypointBySlug(slug);
   if (!paypoint) {
@@ -2031,30 +2029,48 @@ app.get('/analytics/summary', authMiddleware, (_req, res) => {
   }
 });
 
-const shouldServeIndex = (req) => {
-  if (req.method !== 'GET') {
-    return false;
+const staticRouteMap = new Map([
+  ['/', 'index.html'],
+  ['/platform-structure', 'platform-structure.html'],
+  ['/core-functionalities', 'core-functionalities.html'],
+  ['/analytics-insights', 'analytics-insights.html'],
+  ['/how-it-works', 'how-it-works.html'],
+  ['/pricing', 'pricing.html'],
+  ['/contact', 'contact.html'],
+  ['/apply', 'apply.html'],
+  ['/login', 'login.html'],
+  ['/privacy', 'privacy.html'],
+  ['/terms', 'terms.html'],
+  ['/security', 'security.html'],
+]);
+
+const resolveClientHtml = (pathname) => {
+  const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '') || '/';
+  if (staticRouteMap.has(normalizedPath)) {
+    return staticRouteMap.get(normalizedPath);
   }
-  if (req.path.startsWith('/api')) {
-    return false;
+
+  if (/^\/dashboard(\/.*)?$/.test(pathname)) {
+    return 'dashboard.html';
   }
-  if (path.extname(req.path)) {
-    return false;
+
+  if (/^\/paypoint\/review(\/.*)?$/.test(pathname)) {
+    return 'paypoint-review.html';
   }
-  return true;
+
+  if (/^\/paypoint(\/.*)?$/.test(pathname)) {
+    return 'paypoint.html';
+  }
+
+  return 'index.html';
 };
 
 app.get('*', (req, res, next) => {
-  if (!shouldServeIndex(req)) {
+  if (req.path.startsWith('/api')) {
     return next();
   }
-
-  if (!fs.existsSync(clientIndexFile)) {
-    console.error('[server] client build is missing:', clientIndexFile);
-    return res.status(404).send('Client assets not found. Please run the frontend build.');
-  }
-
-  res.sendFile(clientIndexFile);
+  const clientHtml = resolveClientHtml(req.path);
+  res.sendFile(path.join(clientDistPath, clientHtml));
 });
 
 app.use((_req, res) => {

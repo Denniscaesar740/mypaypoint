@@ -14,6 +14,23 @@ export default defineConfig({
   logLevel: 'info', 
   build: {
     rollupOptions: {
+      input: {
+        main: "index.html",
+        platformStructure: "platform-structure.html",
+        coreFunctionalities: "core-functionalities.html",
+        analyticsInsights: "analytics-insights.html",
+        howItWorks: "how-it-works.html",
+        pricing: "pricing.html",
+        contact: "contact.html",
+        apply: "apply.html",
+        login: "login.html",
+        dashboard: "dashboard.html",
+        paypoint: "paypoint.html",
+        paypointReview: "paypoint-review.html",
+        privacy: "privacy.html",
+        terms: "terms.html",
+        security: "security.html",
+      },
       onwarn(warning, warn) {
         // ignore certain harmless warnings
         if (

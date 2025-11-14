@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { CreditCard, Twitter, Facebook, Instagram, Mail } from 'lucide-react';
 
 const Footer: React.FC = () => {
@@ -38,39 +37,39 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/platform-structure" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/platform-structure" className="text-slate-400 hover:text-white transition-colors">
                   Platform Structure
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/core-functionalities" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/core-functionalities" className="text-slate-400 hover:text-white transition-colors">
                   Core Functionalities
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/analytics-insights" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/analytics-insights" className="text-slate-400 hover:text-white transition-colors">
                   Analytics &amp; Insights
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/how-it-works" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/how-it-works" className="text-slate-400 hover:text-white transition-colors">
                   How It Works
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/pricing" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/pricing" className="text-slate-400 hover:text-white transition-colors">
                   Pricing
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/contact" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/contact" className="text-slate-400 hover:text-white transition-colors">
                   Contact Us
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/apply" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/apply" className="text-slate-400 hover:text-white transition-colors">
                   Apply Now
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -80,19 +79,19 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/privacy" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/privacy" className="text-slate-400 hover:text-white transition-colors">
                   Privacy Policy
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/terms" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/terms" className="text-slate-400 hover:text-white transition-colors">
                   Terms of Service
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/security" className="text-slate-400 hover:text-white transition-colors">
+                <a href="/security" className="text-slate-400 hover:text-white transition-colors">
                   Security
-                </Link>
+                </a>
               </li>
             </ul>
           </div>

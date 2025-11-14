@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { CreditCard, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { ApiError, login as loginRequest } from '../lib/api';
@@ -12,7 +11,11 @@ const Login: React.FC = () => {
     rememberMe: false
   });
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const redirectTo = (path: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.assign(path);
+    }
+  };
 
   useEffect(() => {
     const rememberedEmail = localStorage.getItem('paypoint.rememberEmail');
@@ -49,11 +52,11 @@ const Login: React.FC = () => {
 
       toast.success('Signed in successfully!');
       if (response.user.role === 'super-admin') {
-        navigate('/dashboard/super-admin');
+        redirectTo('/dashboard/super-admin');
       } else if (response.user.role === 'organization-admin') {
-        navigate('/dashboard/org-admin');
+        redirectTo('/dashboard/org-admin');
       } else {
-        navigate('/');
+        redirectTo('/');
       }
     } catch (error) {
       if (error instanceof ApiError) {
@@ -80,18 +83,18 @@ const Login: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <Link to="/" className="flex items-center justify-center space-x-2 text-indigo-600 hover:text-indigo-700 transition-colors mb-6">
+          <a href="/" className="flex items-center justify-center space-x-2 text-indigo-600 hover:text-indigo-700 transition-colors mb-6">
             <CreditCard className="h-10 w-10" />
             <span className="text-2xl font-bold">PayPoint</span>
-          </Link>
+          </a>
           <h2 className="text-3xl font-bold text-zinc-800">
             Sign in to your account
           </h2>
           <p className="mt-2 text-sm text-slate-600">
             Or{' '}
-            <Link to="/apply" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+            <a href="/apply" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
               apply for a new account
-            </Link>
+            </a>
           </p>
         </div>
 
@@ -169,9 +172,9 @@ const Login: React.FC = () => {
               </div>
 
               <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+                <a href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
                   Forgot your password?
-                </Link>
+                </a>
               </div>
             </div>
 
@@ -194,9 +197,9 @@ const Login: React.FC = () => {
         <div className="text-center">
           <p className="text-sm text-slate-600">
             Don't have an account?{' '}
-            <Link to="/apply" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+            <a href="/apply" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
               Apply now
-            </Link>
+            </a>
           </p>
         </div>
       </div>

@@ -22,6 +22,7 @@ import PaypointBuilder from './src/pages/PaypointBuilder';
 import PaypointBuilderPreview from './src/pages/PaypointBuilderPreview';
 import PaypointReviewPage from './src/pages/PaypointReviewPage';
 import PaypointTransactionsPage from './src/pages/PaypointTransactionsPage';
+import { PrivacyPolicy, TermsOfService, SecurityOverview } from './src/pages/LegalPages';
 
 const App: React.FC = () => {
   return (
@@ -45,6 +46,9 @@ const App: React.FC = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/apply" element={<Apply />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/security" element={<SecurityOverview />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <ToastContainer

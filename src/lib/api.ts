@@ -765,7 +765,7 @@ export async function savePaypointBuilder(
 }
 
 export async function getPublicPaypoint(slug: string): Promise<PublicPaypointResponse> {
-  return request<PublicPaypointResponse>(`/api/paypoint/${slug}`, {
+  return request<PublicPaypointResponse>(`/paypoint/${slug}`, {
     method: 'GET',
   });
 }
@@ -774,7 +774,7 @@ export async function submitPaypointPayment(
   slug: string,
   payload: SubmitPaymentPayload
 ): Promise<SubmitPaymentResponse> {
-  return request<SubmitPaymentResponse>(`/api/paypoint/${slug}/pay`, {
+  return request<SubmitPaymentResponse>(`/paypoint/${slug}/pay`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
