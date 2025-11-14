@@ -14,8 +14,35 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const safeGetItem = (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.warn(`[login] unable to read ${key} from localStorage`, error);
+      return null;
+    }
+  };
+
+  const safeSetItem = (key: string, value: string): boolean => {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      console.warn(`[login] unable to write ${key} to localStorage`, error);
+      return false;
+    }
+  };
+
+  const safeRemoveItem = (key: string) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn(`[login] unable to remove ${key} from localStorage`, error);
+    }
+  };
+
   useEffect(() => {
-    const rememberedEmail = localStorage.getItem('paypoint.rememberEmail');
+    const rememberedEmail = safeGetItem('paypoint.rememberEmail');
     if (rememberedEmail) {
       setFormData((prev) => ({
         ...prev,
@@ -34,12 +61,15 @@ const Login: React.FC = () => {
     try {
       const response = await loginRequest({ email, password });
 
-      localStorage.setItem('paypoint.session', JSON.stringify(response));
+      if (!safeSetItem('paypoint.session', JSON.stringify(response))) {
+        toast.error('Unable to store your session. Please enable local storage and try again.');
+        return;
+      }
 
       if (rememberMe) {
-        localStorage.setItem('paypoint.rememberEmail', email);
+        safeSetItem('paypoint.rememberEmail', email);
       } else {
-        localStorage.removeItem('paypoint.rememberEmail');
+        safeRemoveItem('paypoint.rememberEmail');
       }
 
       setFormData((prev) => ({
@@ -56,11 +86,13 @@ const Login: React.FC = () => {
         navigate('/');
       }
     } catch (error) {
+      console.error('[login] failed', error);
       if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else if (error instanceof Error) {
         toast.error(error.message);
       } else {
         toast.error('Unexpected error. Please try again.');
-        console.error(error);
       }
     } finally {
       setIsLoading(false);
