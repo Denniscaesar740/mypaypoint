@@ -25,6 +25,8 @@ const normalizeRoutePath = (value) => {
   return value.replace(/\/+$/, '') || '/';
 };
 
+const isDocumentNavigation = (req) => req.headers['sec-fetch-dest'] === 'document';
+
 const routeToHtmlMap = new Map(
   pageRoutes.map((route) => [normalizeRoutePath(route.path), route.filename])
 );
@@ -1873,7 +1875,7 @@ app.delete('/org/team/:id', authMiddleware, requireOrgAdmin, (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/paypoint/*', (req, res) => {
+const handlePublicPaypointRequest = (req, res) => {
   const slug = req.params[0];
   const paypoint = findPaypointBySlug(slug);
   if (!paypoint) {
@@ -1923,9 +1925,9 @@ app.get('/api/paypoint/*', (req, res) => {
     recentTransactions,
     paymentMethods,
   });
-});
+};
 
-app.post('/api/paypoint/*/pay', (req, res) => {
+const handlePublicPaypointPayment = (req, res) => {
   const slug = req.params[0];
   const paypoint = findPaypointBySlug(slug);
   if (!paypoint) {
@@ -2024,7 +2026,18 @@ app.post('/api/paypoint/*/pay', (req, res) => {
     method,
     processedAt: transaction.paidAt,
   });
+};
+
+app.get('/api/paypoint/*', handlePublicPaypointRequest);
+app.get('/paypoint/*', (req, res, next) => {
+  if (isDocumentNavigation(req)) {
+    return next();
+  }
+  return handlePublicPaypointRequest(req, res);
 });
+
+app.post('/api/paypoint/*/pay', handlePublicPaypointPayment);
+app.post('/paypoint/*/pay', handlePublicPaypointPayment);
 
 app.get('/analytics/summary', authMiddleware, (_req, res) => {
   try {
