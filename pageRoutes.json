@@ -1,0 +1,104 @@
+[
+  {
+    "path": "/",
+    "filename": "index.html",
+    "title": "PayPoint Digital Payment Management Platform",
+    "description": "PayPoint is the digital payments management platform built for university associations and groups."
+  },
+  {
+    "path": "/platform-structure",
+    "filename": "platform-structure.html",
+    "title": "Platform Structure | PayPoint",
+    "description": "Discover how PayPoint organizes governance, approvals, and oversight across campuses."
+  },
+  {
+    "path": "/core-functionalities",
+    "filename": "core-functionalities.html",
+    "title": "Core Functionalities | PayPoint",
+    "description": "Explore the tools for super admins, organization admins, and payers that power PayPoint."
+  },
+  {
+    "path": "/analytics-insights",
+    "filename": "analytics-insights.html",
+    "title": "Analytics & Insights | PayPoint",
+    "description": "Track payments, logins, and adoption with PayPoint's analytics dashboards."
+  },
+  {
+    "path": "/how-it-works",
+    "filename": "how-it-works.html",
+    "title": "How It Works | PayPoint",
+    "description": "See how PayPoint guides associations from setup to reconciliation."
+  },
+  {
+    "path": "/pricing",
+    "filename": "pricing.html",
+    "title": "Pricing | PayPoint",
+    "description": "Get the transparent pricing tiers that keep campus fundraisers predictable."
+  },
+  {
+    "path": "/contact",
+    "filename": "contact.html",
+    "title": "Contact | PayPoint",
+    "description": "Reach the PayPoint team for demos, support, or partnership conversations."
+  },
+  {
+    "path": "/apply",
+    "filename": "apply.html",
+    "title": "Apply | PayPoint",
+    "description": "Start the application to bring PayPoint to your student association."
+  },
+  {
+    "path": "/login",
+    "filename": "login.html",
+    "title": "Sign In | PayPoint",
+    "description": "Securely sign in to your PayPoint dashboard or organization view."
+  },
+  {
+    "path": "/dashboard",
+    "filename": "dashboard.html",
+    "title": "Dashboards | PayPoint",
+    "description": "Access the explorer page that links to the Super Admin and Organization Admin dashboards."
+  },
+  {
+    "path": "/dashboard/super-admin",
+    "filename": "dashboard-super-admin.html",
+    "title": "Super Admin Dashboard | PayPoint",
+    "description": "Manage organizations, approvals, and platform metrics from the super admin console."
+  },
+  {
+    "path": "/dashboard/org-admin",
+    "filename": "dashboard-org-admin.html",
+    "title": "Organization Admin Dashboard | PayPoint",
+    "description": "Launch PayPoints, review transactions, and keep members on track from the org admin hub."
+  },
+  {
+    "path": "/paypoint",
+    "filename": "paypoint.html",
+    "title": "PayPoint | PayPoint",
+    "description": "Launch branded PayPoint pages to collect payments that include instructions and FAQs."
+  },
+  {
+    "path": "/paypoint/review",
+    "filename": "paypoint-review.html",
+    "title": "PayPoint Review | PayPoint",
+    "description": "Evaluate PayPoint links, approve updates, and inspect responses before they go live."
+  },
+  {
+    "path": "/privacy",
+    "filename": "privacy.html",
+    "title": "Privacy Policy | PayPoint",
+    "description": "Review how PayPoint keeps administrator and member data secure and compliant."
+  },
+  {
+    "path": "/terms",
+    "filename": "terms.html",
+    "title": "Terms of Service | PayPoint",
+    "description": "Understand the terms that govern PayPoint usage and responsibilities."
+  },
+  {
+    "path": "/security",
+    "filename": "security.html",
+    "title": "Security | PayPoint",
+    "description": "Learn how PayPoint protects payments, data, and operational reliability."
+  }
+]

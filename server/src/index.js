@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -11,6 +12,22 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const clientDistPath = path.resolve(__dirname, '..', '..', 'dist');
+const pageRoutesPath = path.resolve(__dirname, '..', '..', 'pageRoutes.json');
+const pageRoutes = JSON.parse(fs.readFileSync(pageRoutesPath, 'utf-8'));
+
+const normalizeRoutePath = (value) => {
+  if (!value) {
+    return '/';
+  }
+  if (value === '/') {
+    return '/';
+  }
+  return value.replace(/\/+$/, '') || '/';
+};
+
+const routeToHtmlMap = new Map(
+  pageRoutes.map((route) => [normalizeRoutePath(route.path), route.filename])
+);
 
 const PORT = process.env.PORT || 4000;
 
@@ -2029,25 +2046,10 @@ app.get('/analytics/summary', authMiddleware, (_req, res) => {
   }
 });
 
-const staticRouteMap = new Map([
-  ['/', 'index.html'],
-  ['/platform-structure', 'platform-structure.html'],
-  ['/core-functionalities', 'core-functionalities.html'],
-  ['/analytics-insights', 'analytics-insights.html'],
-  ['/how-it-works', 'how-it-works.html'],
-  ['/pricing', 'pricing.html'],
-  ['/contact', 'contact.html'],
-  ['/apply', 'apply.html'],
-  ['/login', 'login.html'],
-  ['/privacy', 'privacy.html'],
-  ['/terms', 'terms.html'],
-  ['/security', 'security.html'],
-]);
-
 const resolveClientHtml = (pathname) => {
-  const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '') || '/';
-  if (staticRouteMap.has(normalizedPath)) {
-    return staticRouteMap.get(normalizedPath);
+  const normalizedPath = normalizeRoutePath(pathname);
+  if (routeToHtmlMap.has(normalizedPath)) {
+    return routeToHtmlMap.get(normalizedPath);
   }
 
   if (/^\/dashboard(\/.*)?$/.test(pathname)) {
