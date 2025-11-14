@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -11,6 +12,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const clientDistPath = path.resolve(__dirname, '..', '..', 'dist');
+const clientIndexFile = path.join(clientDistPath, 'index.html');
 
 const PORT = process.env.PORT || 4000;
 
@@ -2029,11 +2031,30 @@ app.get('/analytics/summary', authMiddleware, (_req, res) => {
   }
 });
 
-app.get('*', (req, res, next) => {
+const shouldServeIndex = (req) => {
+  if (req.method !== 'GET') {
+    return false;
+  }
   if (req.path.startsWith('/api')) {
+    return false;
+  }
+  if (path.extname(req.path)) {
+    return false;
+  }
+  return true;
+};
+
+app.get('*', (req, res, next) => {
+  if (!shouldServeIndex(req)) {
     return next();
   }
-  res.sendFile(path.join(clientDistPath, 'index.html'));
+
+  if (!fs.existsSync(clientIndexFile)) {
+    console.error('[server] client build is missing:', clientIndexFile);
+    return res.status(404).send('Client assets not found. Please run the frontend build.');
+  }
+
+  res.sendFile(clientIndexFile);
 });
 
 app.use((_req, res) => {
