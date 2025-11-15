@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Menu,
   Bell,
@@ -36,6 +36,7 @@ import {
 } from '../lib/api';
 
 import { buildShareUrl } from '../lib/url';
+import { useNavigationGuard } from '../lib/hooks/useNavigationGuard';
 
 type SessionInfo = {
   token: string;
@@ -123,6 +124,9 @@ const StatCard: React.FC<{
   );
 };
 const OrgAdminDashboard: React.FC = () => {
+  const location = useLocation();
+  useNavigationGuard(location.pathname.startsWith('/org-admin'), 'Are you sure you want to leave the admin workspace?');
+
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [overview, setOverview] = useState<OrgOverview | null>(null);
   const [team, setTeam] = useState<OrgTeamMember[]>([]);

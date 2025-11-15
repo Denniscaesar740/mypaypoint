@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Menu,
   Bell,
@@ -36,9 +36,9 @@ import {
   approveOrganization,
   createAnnouncement,
   createOrganization,
+  getAdminApplications,
   getAdminOrganizations,
   getAdminOverview,
-  getAdminApplications,
   getAnnouncements,
   getGateways,
   getPricingConfig,
@@ -51,6 +51,7 @@ import {
   triggerGatewayFailover,
   updatePricingConfig,
 } from '../lib/api';
+import { useNavigationGuard } from '../lib/hooks/useNavigationGuard';
 
 type SessionInfo = {
   token: string;
@@ -110,6 +111,9 @@ const formatRelativeTime = (isoDate: string): string => {
 const shellOverlay = 'rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_25px_55px_rgba(15,23,42,0.45)] backdrop-blur';
 
 const SuperAdminDashboard: React.FC = () => {
+  const location = useLocation();
+  useNavigationGuard(location.pathname.startsWith('/super-admin'), 'Are you sure you want to leave the admin workspace?');
+
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [overview, setOverview] = useState<AdminOverview | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
