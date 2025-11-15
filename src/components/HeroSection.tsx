@@ -43,10 +43,10 @@ const HeroSection: React.FC = () => {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </a>
               <a
-                href="/how-it-works"
+                href="/paypoint"
                 className="inline-flex items-center justify-center px-8 py-4 bg-white hover:bg-slate-50 text-indigo-600 font-semibold rounded-lg border border-indigo-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
-                Learn How It Works
+                Open a PayPoint
               </a>
             </div>
           </div>

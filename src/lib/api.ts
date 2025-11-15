@@ -482,6 +482,45 @@ export interface OrgPaypointDetail {
   transactions: OrgPaypointTransaction[];
 }
 
+export interface ApplicationDocument {
+  name: string;
+  type: string;
+  size: number;
+}
+
+export interface ApplicationSubmissionPayload {
+  organizationName: string;
+  organizationType: string;
+  university: string;
+  establishedYear: string;
+  memberCount: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  position: string;
+  description?: string;
+  website?: string;
+  socialMedia?: string;
+  documents?: {
+    registrationDoc?: ApplicationDocument | null;
+    leadershipProof?: ApplicationDocument | null;
+    universityAffiliation?: ApplicationDocument | null;
+  };
+}
+
+export interface ApplicationRecord extends ApplicationSubmissionPayload {
+  id: string;
+  status: 'pending' | 'approved' | 'declined';
+  submittedAt: string;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
+  reviewNote?: string | null;
+}
+
+export interface ApplicationsResponse {
+  items: ApplicationRecord[];
+}
+
 export interface PublicPaypointResponse {
   paypoint: {
     id: string;
@@ -595,6 +634,33 @@ export async function resolveRefund(
     method: 'POST',
     token,
     body: JSON.stringify(payload),
+  });
+}
+
+export async function submitApplication(payload: ApplicationSubmissionPayload): Promise<ApplicationRecord> {
+  return request<ApplicationRecord>('/applications', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getAdminApplications(token: string): Promise<ApplicationsResponse> {
+  return request<ApplicationsResponse>('/admin/applications', {
+    method: 'GET',
+    token,
+  });
+}
+
+export async function reviewApplication(
+  token: string,
+  applicationId: string,
+  action: 'approved' | 'declined',
+  note?: string
+): Promise<ApplicationRecord> {
+  return request<ApplicationRecord>(`/admin/applications/${applicationId}/decision`, {
+    method: 'POST',
+    token,
+    body: JSON.stringify({ action, note }),
   });
 }
 

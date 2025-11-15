@@ -26,6 +26,7 @@ import type {
   ActivityEntry,
   AdminOverview,
   Announcement,
+  ApplicationRecord,
   GatewayProvider,
   Organization,
   PricingConfig,
@@ -37,12 +38,14 @@ import {
   createOrganization,
   getAdminOrganizations,
   getAdminOverview,
+  getAdminApplications,
   getAnnouncements,
   getGateways,
   getPricingConfig,
   getRefunds,
   reactivateOrganization,
   resolveRefund,
+  reviewApplication,
   restoreGateway,
   suspendOrganization,
   triggerGatewayFailover,
@@ -147,6 +150,8 @@ const SuperAdminDashboard: React.FC = () => {
     content: '',
     scheduledFor: '',
   });
+  const [applications, setApplications] = useState<ApplicationRecord[]>([]);
+  const [applicationActionLoading, setApplicationActionLoading] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
@@ -193,6 +198,7 @@ const SuperAdminDashboard: React.FC = () => {
           gatewaysData,
           pricingData,
           announcementsData,
+          applicationsData,
         ] = await Promise.all([
           getAdminOverview(token),
           getAdminOrganizations(token),
@@ -200,6 +206,7 @@ const SuperAdminDashboard: React.FC = () => {
           getGateways(token),
           getPricingConfig(token),
           getAnnouncements(token),
+          getAdminApplications(token),
         ]);
 
         setOverview(overviewData);
@@ -213,6 +220,7 @@ const SuperAdminDashboard: React.FC = () => {
           platformCommission: pricingData.platformCommission.toString(),
         });
         setAnnouncements(announcementsData.items);
+        setApplications(applicationsData.items);
         setLastRefreshed(new Date());
       } catch (error) {
         if (error instanceof Error) {
@@ -241,6 +249,25 @@ const SuperAdminDashboard: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [token, loadAll]);
+
+  const handleApplicationDecision = useCallback(
+    async (applicationId: string, action: 'approved' | 'declined') => {
+      if (!token) return;
+      setApplicationActionLoading(applicationId);
+      try {
+        const updated = await reviewApplication(token, applicationId, action);
+        setApplications((prev) =>
+          prev.map((item) => (item.id === applicationId ? updated : item))
+        );
+        toast.success(`Application ${action === 'approved' ? 'approved' : 'declined'}.`);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Unable to update application status.');
+      } finally {
+        setApplicationActionLoading(null);
+      }
+    },
+    [token]
+  );
 
   const handleLogout = () => {
     localStorage.removeItem('paypoint.session');
@@ -1033,6 +1060,107 @@ const SuperAdminDashboard: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            </section>
+            <section className="mt-10">
+              <div className={shellOverlay}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">Pending applications</h2>
+                    <p className="text-xs text-white/60">Review incoming organizations before they gain access.</p>
+                  </div>
+                  <span className="text-xs text-white/50">Auto-refreshes every 30s</span>
+                </div>
+                <div className="mt-6 space-y-4">
+                  {applications.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-white/30 bg-white/5 px-4 py-6 text-sm text-white/60">
+                      No applications awaiting review.
+                    </div>
+                  ) : (
+                    applications.map((application) => {
+                      const isLoadingAction = applicationActionLoading === application.id;
+                      const isPending = application.status === 'pending';
+                      return (
+                        <article key={application.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_20px_45px_rgba(2,6,23,0.45)]">
+                          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div>
+                              <p className="text-lg font-semibold text-white">{application.organizationName}</p>
+                              <p className="text-xs text-white/60">
+                                {application.university} • {application.organizationType}
+                              </p>
+                              <p className="text-xs text-white/50">Submitted {formatRelativeTime(application.submittedAt)}</p>
+                            </div>
+                            <span
+                              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                                application.status === 'approved'
+                                  ? 'bg-emerald-500/20 text-emerald-200'
+                                  : application.status === 'declined'
+                                  ? 'bg-rose-500/20 text-rose-200'
+                                  : 'bg-indigo-500/20 text-indigo-200'
+                              }`}
+                            >
+                              {application.status.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3 text-xs text-white/70">
+                            <div>
+                              <p className="text-[11px] uppercase tracking-wide text-white/50">Primary contact</p>
+                              <p className="font-semibold text-white/90">{application.contactName}</p>
+                              <p>{application.contactEmail}</p>
+                              <p>{application.contactPhone}</p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-wide text-white/50">Organization stats</p>
+                              <p>{application.memberCount} members</p>
+                              <p className="text-white/60">Established {application.establishedYear}</p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-wide text-white/50">Notes</p>
+                              <p>{application.description || 'No additional notes provided.'}</p>
+                              {application.reviewNote && (
+                                <p className="mt-1 text-[10px] text-white/50">Review note: {application.reviewNote}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
+                            <span className="rounded-full border border-white/15 px-3 py-1">
+                              Registration: {application.documents?.registrationDoc?.name || 'missing'}
+                            </span>
+                            <span className="rounded-full border border-white/15 px-3 py-1">
+                              Leadership: {application.documents?.leadershipProof?.name || 'missing'}
+                            </span>
+                            <span className="rounded-full border border-white/15 px-3 py-1">
+                              Affiliation: {application.documents?.universityAffiliation?.name || 'missing'}
+                            </span>
+                          </div>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleApplicationDecision(application.id, 'approved')}
+                              disabled={!isPending || isLoadingAction}
+                              className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white transition hover:border-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {isLoadingAction ? 'Processing...' : 'Approve'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleApplicationDecision(application.id, 'declined')}
+                              disabled={!isPending || isLoadingAction}
+                              className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white transition hover:border-rose-400 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {isLoadingAction ? 'Processing...' : 'Decline'}
+                            </button>
+                          </div>
+                          {application.reviewedBy && application.reviewedAt && (
+                            <p className="mt-3 text-[11px] text-white/50">
+                              Reviewed by {application.reviewedBy} on {new Date(application.reviewedAt).toLocaleString()}
+                            </p>
+                          )}
+                        </article>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </section>

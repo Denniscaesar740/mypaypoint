@@ -279,6 +279,74 @@ let organizations = [
   },
 ];
 
+const sanitizeDocumentEntry = (document) => {
+  if (!document || !document.name) {
+    return null;
+  }
+  return {
+    name: String(document.name),
+    type: document.type || 'application/octet-stream',
+    size: Number(document.size) || 0,
+  };
+};
+
+const createApplicationRecord = (payload) => {
+  const now = new Date().toISOString();
+  const documents = payload.documents || {};
+
+  return {
+    id: uuid(),
+    organizationName: String(payload.organizationName || '').trim(),
+    organizationType: String(payload.organizationType || '').trim(),
+    university: String(payload.university || '').trim(),
+    establishedYear: String(payload.establishedYear || '').trim(),
+    memberCount: String(payload.memberCount || '').trim(),
+    contactName: String(payload.contactName || '').trim(),
+    contactEmail: String(payload.contactEmail || '').trim(),
+    contactPhone: String(payload.contactPhone || '').trim(),
+    position: String(payload.position || '').trim(),
+    description: String(payload.description || '').trim(),
+    website: payload.website ? String(payload.website).trim() : '',
+    socialMedia: payload.socialMedia ? String(payload.socialMedia).trim() : '',
+    documents: {
+      registrationDoc: sanitizeDocumentEntry(documents.registrationDoc),
+      leadershipProof: sanitizeDocumentEntry(documents.leadershipProof),
+      universityAffiliation: sanitizeDocumentEntry(documents.universityAffiliation),
+    },
+    status: 'pending',
+    submittedAt: now,
+    reviewedAt: null,
+    reviewedBy: null,
+    reviewNote: null,
+  };
+};
+
+const applications = [
+  createApplicationRecord({
+    organizationName: 'Robotics Club',
+    organizationType: 'Academic Society',
+    university: 'Kwame Nkrumah University of Science and Technology',
+    establishedYear: '2016',
+    memberCount: '101-250',
+    contactName: 'Kwabena Atta',
+    contactEmail: 'robotics@knust.edu.gh',
+    contactPhone: '+233204000000',
+    position: 'President',
+    description: 'We build autonomous solutions and prototype smart hardware for campus events.',
+    website: 'https://roboclub.knust.edu.gh',
+    socialMedia: '@knustrobotics',
+    documents: {
+      registrationDoc: { name: 'robotics-registration.pdf', type: 'application/pdf', size: 138000 },
+      leadershipProof: { name: 'robotics-leadership.pdf', type: 'application/pdf', size: 64000 },
+      universityAffiliation: { name: 'knust-affiliation.pdf', type: 'application/pdf', size: 96000 },
+    },
+  }),
+];
+
+function findApplicationById(id) {
+  return applications.find((application) => application.id === id) || null;
+}
+
 let refunds = [
   {
     id: 'refund-1',
@@ -1144,6 +1212,12 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.get('/admin/applications', authMiddleware, requireSuperAdmin, (_req, res) => {
+  res.json({
+    items: applications,
+  });
+});
+
 app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body || {};
 
@@ -1179,6 +1253,31 @@ app.post('/auth/login', async (req, res) => {
     console.error('[auth/login] session failure:', error);
     res.status(500).json({ message: 'Unable to create session. Please try again.' });
   }
+});
+
+app.post('/applications', (req, res) => {
+  const payload = req.body || {};
+  const requiredFields = [
+    'organizationName',
+    'organizationType',
+    'university',
+    'establishedYear',
+    'memberCount',
+    'contactName',
+    'contactEmail',
+    'contactPhone',
+    'position',
+  ];
+
+  const missing = requiredFields.filter((field) => !payload[field] || !String(payload[field]).trim());
+  if (missing.length > 0) {
+    return res.status(400).json({ message: `Missing required fields: ${missing.join(', ')}` });
+  }
+
+  const application = createApplicationRecord(payload);
+  applications.unshift(application);
+
+  res.status(201).json(application);
 });
 
 function authMiddleware(req, res, next) {
@@ -1235,6 +1334,26 @@ app.get('/auth/validate', authMiddleware, (req, res) => {
     user: req.session.user,
     issuedAt: req.session.createdAt,
   });
+});
+
+app.post('/admin/applications/:id/decision', authMiddleware, requireSuperAdmin, (req, res) => {
+  const applicationId = req.params.id;
+  const application = findApplicationById(applicationId);
+  if (!application) {
+    return res.status(404).json({ message: 'Application not found.' });
+  }
+
+  const { action, note } = req.body || {};
+  if (!['approved', 'declined'].includes(action)) {
+    return res.status(400).json({ message: 'Invalid action. Use approved or declined.' });
+  }
+
+  application.status = action;
+  application.reviewedAt = new Date().toISOString();
+  application.reviewedBy = req.session.user.name;
+  application.reviewNote = note ? String(note).trim() : null;
+
+  res.json(application);
 });
 
 app.get('/admin/overview', authMiddleware, requireSuperAdmin, (_req, res) => {

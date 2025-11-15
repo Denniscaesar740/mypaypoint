@@ -3,10 +3,30 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { CheckCircle, Upload, User, Building, FileText } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { submitApplication } from '../lib/api';
+import type { ApplicationSubmissionPayload, ApplicationRecord } from '../lib/api';
+
+interface ApplyFormData {
+  organizationName: string;
+  organizationType: string;
+  university: string;
+  establishedYear: string;
+  memberCount: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  position: string;
+  description: string;
+  website: string;
+  socialMedia: string;
+  registrationDoc: File | null;
+  leadershipProof: File | null;
+  universityAffiliation: File | null;
+}
 
 const Apply: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ApplyFormData>({
     // Organization Info
     organizationName: '',
     organizationType: '',
@@ -30,6 +50,10 @@ const Apply: React.FC = () => {
     leadershipProof: null,
     universityAffiliation: null
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState<ApplicationRecord | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const steps = [
     { number: 1, title: 'Organization Details', icon: Building },
@@ -76,6 +100,17 @@ const Apply: React.FC = () => {
     });
   };
 
+  const toDocumentPayload = (file: File | null) => {
+    if (!file) {
+      return null;
+    }
+    return {
+      name: file.name,
+      type: file.type || 'application/octet-stream',
+      size: file.size,
+    };
+  };
+
   const handleNext = () => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
@@ -88,11 +123,45 @@ const Apply: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
-    toast.success('Application submitted successfully! We\'ll review it within 24 hours and get back to you.');
-    // Reset form or redirect
+    if (isSubmitting) {
+      return;
+    }
+
+    const payload: ApplicationSubmissionPayload = {
+      organizationName: formData.organizationName,
+      organizationType: formData.organizationType,
+      university: formData.university,
+      establishedYear: formData.establishedYear,
+      memberCount: formData.memberCount,
+      contactName: formData.contactName,
+      contactEmail: formData.contactEmail,
+      contactPhone: formData.contactPhone,
+      position: formData.position,
+      description: formData.description,
+      website: formData.website,
+      socialMedia: formData.socialMedia,
+      documents: {
+        registrationDoc: toDocumentPayload(formData.registrationDoc),
+        leadershipProof: toDocumentPayload(formData.leadershipProof),
+        universityAffiliation: toDocumentPayload(formData.universityAffiliation),
+      },
+    };
+
+    setIsSubmitting(true);
+    try {
+      const response = await submitApplication(payload);
+      setSubmissionResult(response);
+      setSubmissionError(null);
+      toast.success("Application submitted successfully! We'll review it within 24 hours.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to submit the application. Please try again.';
+      setSubmissionError(message);
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStepContent = () => {
@@ -394,6 +463,22 @@ const Apply: React.FC = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-2xl font-bold text-zinc-800 mb-6">Review & Submit</h3>
+            {submissionResult && (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-900">
+                <p className="font-semibold text-emerald-900">Application reference: #{submissionResult.id}</p>
+                <p className="text-xs text-emerald-700">Submitted on {new Date(submissionResult.submittedAt).toLocaleString()}</p>
+                <p className="mt-2 text-emerald-800">Status: {submissionResult.status}</p>
+                <p className="text-xs text-emerald-700">
+                  Review will be handled by the PayPoint team; you&apos;ll receive a notification by email once a decision is taken.
+                </p>
+              </div>
+            )}
+            {submissionError && (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-900">
+                <p className="font-semibold text-rose-900">Submission issue</p>
+                <p className="text-xs text-rose-700">{submissionError}</p>
+              </div>
+            )}
             
             <div className="bg-slate-50 rounded-xl p-6 space-y-4">
               <h4 className="font-semibold text-zinc-800">Organization Details</h4>
@@ -413,6 +498,24 @@ const Apply: React.FC = () => {
                 <div><span className="font-medium">Position:</span> {formData.position}</div>
                 <div><span className="font-medium">Email:</span> {formData.contactEmail}</div>
                 <div><span className="font-medium">Phone:</span> {formData.contactPhone}</div>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-xl p-6 space-y-3">
+              <h4 className="font-semibold text-zinc-800">Uploaded documents</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600">
+                <div className="rounded-2xl border border-slate-200 bg-white/40 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Registration document</p>
+                  <p className="mt-1 font-semibold text-slate-900">{formData.registrationDoc?.name || 'Not uploaded yet'}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white/40 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Leadership proof</p>
+                  <p className="mt-1 font-semibold text-slate-900">{formData.leadershipProof?.name || 'Not uploaded yet'}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white/40 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Affiliation proof</p>
+                  <p className="mt-1 font-semibold text-slate-900">{formData.universityAffiliation?.name || 'Not uploaded yet'}</p>
+                </div>
               </div>
             </div>
 
@@ -517,12 +620,13 @@ const Apply: React.FC = () => {
                   </button>
 
                   {currentStep === 5 ? (
-                    <button
-                      type="submit"
-                      className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                      Submit Application
-                    </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || Boolean(submissionResult)}
+                    className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSubmitting ? 'Submitting...' : submissionResult ? 'Submitted' : 'Submit Application'}
+                  </button>
                   ) : (
                     <button
                       type="button"
