@@ -45,6 +45,12 @@ const CTASection: React.FC = () => {
             >
               Have Questions? Contact Us
             </a>
+            <a
+              href="/paypoint"
+              className="inline-flex items-center justify-center px-8 py-4 bg-indigo-500 hover:bg-indigo-400 text-white font-semibold rounded-lg border border-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600"
+            >
+              Open a PayPoint
+            </a>
           </div>
 
           <p className="text-indigo-200 text-sm mt-6">
