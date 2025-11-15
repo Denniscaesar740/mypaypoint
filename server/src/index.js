@@ -25,7 +25,19 @@ const normalizeRoutePath = (value) => {
   return value.replace(/\/+$/, '') || '/';
 };
 
-const isDocumentNavigation = (req) => req.headers['sec-fetch-dest'] === 'document';
+const isDocumentNavigation = (req) => {
+  const secFetchDest = req.headers['sec-fetch-dest'];
+  if (secFetchDest) {
+    return secFetchDest === 'document';
+  }
+
+  if (typeof req.accepts === 'function') {
+    return Boolean(req.accepts('html'));
+  }
+
+  const accept = req.headers.accept || '';
+  return accept.includes('text/html');
+};
 
 const routeToHtmlMap = new Map(
   pageRoutes.map((route) => [normalizeRoutePath(route.path), route.filename])
