@@ -43,6 +43,144 @@ const routeToHtmlMap = new Map(
   pageRoutes.map((route) => [normalizeRoutePath(route.path), route.filename])
 );
 
+const ACCESS_CODE_PREFIX = 'PP';
+const ACCESS_CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+const paypointAccessCodeIndex = new Map();
+
+const sanitizeAccessCode = (value) => {
+  if (!value) {
+    return '';
+  }
+  let normalized = String(value).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!normalized) {
+    return '';
+  }
+  if (!normalized.startsWith(ACCESS_CODE_PREFIX)) {
+    normalized = `${ACCESS_CODE_PREFIX}${normalized}`;
+  }
+  return normalized;
+};
+
+const formatAccessCode = (normalizedValue) => {
+  if (!normalizedValue) {
+    return '';
+  }
+  let value = normalizedValue;
+  if (!value.startsWith(ACCESS_CODE_PREFIX)) {
+    value = `${ACCESS_CODE_PREFIX}${value}`;
+  }
+  const prefix = value.slice(0, ACCESS_CODE_PREFIX.length);
+  const body = value.slice(ACCESS_CODE_PREFIX.length);
+  const grouped = body.match(/.{1,3}/g)?.join('-') ?? body;
+  return `${prefix}-${grouped}`;
+};
+
+const generateAccessCodeValue = () => {
+  let buffer = ACCESS_CODE_PREFIX;
+  for (let index = 0; index < 6; index += 1) {
+    const randomIndex = Math.floor(Math.random() * ACCESS_CODE_ALPHABET.length);
+    buffer += ACCESS_CODE_ALPHABET[randomIndex];
+  }
+  return buffer;
+};
+
+const assignAccessCode = (paypoint, preferredValue) => {
+  const preferred = sanitizeAccessCode(preferredValue);
+  let normalized = preferred && !paypointAccessCodeIndex.has(preferred) ? preferred : '';
+
+  if (!normalized) {
+    do {
+      normalized = generateAccessCodeValue();
+    } while (paypointAccessCodeIndex.has(normalized));
+  }
+
+  paypoint.accessCode = formatAccessCode(normalized);
+  paypointAccessCodeIndex.set(normalized, paypoint);
+};
+
+const normalizeShareSearchValue = (rawValue) => {
+  if (!rawValue) {
+    return '';
+  }
+  let value = String(rawValue).trim();
+  if (!value) {
+    return '';
+  }
+
+  try {
+    const parsed = new URL(value);
+    value = parsed.pathname || '';
+  } catch {
+    value = value.replace(/^[a-z]+:\/\/[^/]+/i, '');
+  }
+
+  const paypointIndex = value.toLowerCase().indexOf('paypoint/');
+  if (paypointIndex > 0) {
+    value = value.slice(paypointIndex);
+  }
+
+  try {
+    value = decodeURIComponent(value);
+  } catch {
+    // ignore malformed encodings
+  }
+
+  value = value.replace(/\\/g, '/');
+  value = value.replace(/\/{2,}/g, '/');
+  value = value.replace(/^paypoint\//i, '');
+  return value.replace(/^\/+|\/+$/g, '');
+};
+
+const buildSlugCandidates = (value) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return [];
+  }
+  const normalized = trimmed.toLowerCase();
+  const hyphenated = normalized.replace(/\s+/g, '-').replace(/-+/g, '-');
+  const cleaned = hyphenated.replace(/[^a-z0-9/-]/g, '-').replace(/-+/g, '-');
+  const segments = cleaned.split('/').filter(Boolean);
+  const candidates = new Set([trimmed, normalized, cleaned]);
+  if (segments.length > 0) {
+    candidates.add(segments.join('/'));
+    segments.forEach((segment) => {
+      candidates.add(segment);
+    });
+  }
+  return Array.from(candidates).filter(Boolean);
+};
+
+const findPaypointByShareValue = (rawValue) => {
+  const normalizedValue = normalizeShareSearchValue(rawValue);
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const sanitizedCode = sanitizeAccessCode(normalizedValue);
+  if (sanitizedCode && paypointAccessCodeIndex.has(sanitizedCode)) {
+    return paypointAccessCodeIndex.get(sanitizedCode);
+  }
+
+  const candidates = buildSlugCandidates(normalizedValue);
+  for (const candidate of candidates) {
+    const paypoint = paypoints.find((item) => item.slug && item.slug.toLowerCase() === candidate.toLowerCase());
+    if (paypoint) {
+      return paypoint;
+    }
+  }
+
+  if (!normalizedValue.includes('/')) {
+    const looseMatches = paypoints.filter(
+      (item) => item.slug && item.slug.toLowerCase().endsWith(`/${normalizedValue.toLowerCase()}`)
+    );
+    if (looseMatches.length === 1) {
+      return looseMatches[0];
+    }
+  }
+
+  return null;
+};
+
 const PORT = process.env.PORT || 4000;
 
 const app = express();
@@ -662,6 +800,8 @@ function seedPaypoint(data) {
     transactions: data.transactions || [],
   };
 
+  assignAccessCode(paypoint, data.accessCode);
+
   const relativeLink = paypoint.slug ? `/paypoint/${paypoint.slug}` : null;
   if (paypoint.link && paypoint.link.startsWith('http')) {
     paypoint.link = relativeLink || paypoint.link;
@@ -948,7 +1088,14 @@ function findOrganizationById(id) {
 }
 
 function findPaypointBySlug(slug) {
-  return paypoints.find((paypoint) => paypoint.slug === slug) || null;
+  if (!slug) {
+    return null;
+  }
+  const exactMatch = paypoints.find((paypoint) => paypoint.slug === slug);
+  if (exactMatch) {
+    return exactMatch;
+  }
+  return findPaypointByShareValue(slug);
 }
 
 function recalcPaypointMetrics(paypoint) {
@@ -1448,6 +1595,7 @@ app.get('/org/overview', authMiddleware, requireOrgAdmin, (req, res) => {
       unpaidMembers: paypoint.unpaidMembers,
       link: paypoint.link,
       slug: paypoint.slug,
+       accessCode: paypoint.accessCode,
       createdAt: paypoint.createdAt,
       updatedAt: paypoint.updatedAt,
       restriction: paypoint.restriction,
@@ -1755,6 +1903,8 @@ app.get('/org/paypoints/:id/transactions', authMiddleware, requireOrgAdmin, (req
       status: paypoint.status,
       restriction: paypoint.restriction,
       link: paypoint.link,
+      slug: paypoint.slug,
+      accessCode: paypoint.accessCode,
     },
     transactions: paypoint.transactions,
   });
@@ -1915,6 +2065,7 @@ const handlePublicPaypointRequest = (req, res) => {
       restriction: paypoint.restriction,
       link: paypoint.link,
       slug: paypoint.slug,
+      accessCode: paypoint.accessCode,
       status: paypoint.status,
       totalCollected: paypoint.totalCollected,
       unpaidMembers: paypoint.unpaidMembers,
@@ -2034,6 +2185,7 @@ const handlePublicPaypointPayment = (req, res) => {
     paypoint: {
       title: paypoint.title,
       link: paypoint.link,
+      accessCode: paypoint.accessCode,
     },
     method,
     processedAt: transaction.paidAt,

@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   TrendingUp,
   Globe,
+  KeyRound,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { formatDistanceToNow } from 'date-fns';
@@ -133,6 +134,7 @@ const OrgAdminDashboard: React.FC = () => {
   const [downloadLoadingId, setDownloadLoadingId] = useState<string | null>(null);
   const [clipboardId, setClipboardId] = useState<string | null>(null);
   const [previewClipboardId, setPreviewClipboardId] = useState<string | null>(null);
+  const [codeClipboardId, setCodeClipboardId] = useState<string | null>(null);
   const [teamSaving, setTeamSaving] = useState(false);
   const [teamRemovingId, setTeamRemovingId] = useState<string | null>(null);
   const [paypointForm, setPaypointForm] = useState({ title: '', description: '', amount: '', restriction: restrictionOptions[0] });
@@ -269,6 +271,17 @@ const OrgAdminDashboard: React.FC = () => {
       setTimeout(() => setPreviewClipboardId(null), 2000);
     } catch {
       toast.error('Could not copy preview link.');
+    }
+  };
+
+  const handleCopyAccessCode = async (paypointId: string, accessCode: string) => {
+    try {
+      await navigator.clipboard.writeText(accessCode);
+      setCodeClipboardId(paypointId);
+      toast.success('Access code copied.');
+      setTimeout(() => setCodeClipboardId(null), 2000);
+    } catch {
+      toast.error('Could not copy access code. Please copy manually.');
     }
   };
 
@@ -535,6 +548,23 @@ const OrgAdminDashboard: React.FC = () => {
                             {paypoint.slug}
                           </p>
                         </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-white/70">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold text-white">
+                          <KeyRound className="h-3.5 w-3.5 text-indigo-300" />
+                          {paypoint.accessCode}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyAccessCode(paypoint.id, paypoint.accessCode)}
+                          className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5 font-semibold text-white transition hover:border-indigo-400/60">
+                          {codeClipboardId === paypoint.id ? (
+                            <ClipboardCheck className="h-3.5 w-3.5 text-emerald-300" />
+                          ) : (
+                            <KeyRound className="h-3.5 w-3.5 text-indigo-300" />
+                          )}
+                          <span className="text-xs">Copy code</span>
+                        </button>
                       </div>
                       {paypoint.builderSummary && (
                         <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-white/80">

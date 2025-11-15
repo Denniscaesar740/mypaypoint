@@ -384,6 +384,7 @@ export interface OrgPaypoint {
   restriction: string;
   slug: string;
   link: string;
+  accessCode: string;
   status: 'draft' | 'published' | 'archived';
   totalCollected: number;
   unpaidMembers: number;
@@ -425,6 +426,7 @@ export interface OrgOverview {
     unpaidMembers: number;
     link: string;
     slug: string;
+    accessCode: string;
     createdAt: string;
     updatedAt: string;
     restriction: string;
@@ -472,6 +474,8 @@ export interface OrgPaypointDetail {
     status: 'draft' | 'published' | 'archived';
     restriction: string;
     link: string;
+    slug: string;
+    accessCode: string;
     createdAt: string;
     updatedAt: string;
   };
@@ -487,6 +491,7 @@ export interface PublicPaypointResponse {
     restriction: string;
     link: string;
     slug: string;
+    accessCode: string;
     status: 'draft' | 'published' | 'archived';
     totalCollected: number;
     unpaidMembers: number;

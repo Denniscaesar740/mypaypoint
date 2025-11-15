@@ -11,6 +11,7 @@ import {
   CreditCard,
   CheckCircle2,
   AlertTriangle,
+  KeyRound,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { getPublicPaypoint } from '../lib/api';
@@ -36,37 +37,52 @@ const storageKeyForSlug = (slug: string) => `paypoint-review-${slug}`;
 
 const PayPointPage: React.FC = () => {
   const params = useParams<{ '*': string }>();
-  const slug = params['*'];
+  const slug = (params['*'] ?? '').trim();
   const navigate = useNavigate();
 
   const [data, setData] = useState<PublicPaypointResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [codeCopySuccess, setCodeCopySuccess] = useState(false);
+  const [lookupInput, setLookupInput] = useState(slug);
+  const [lookupError, setLookupError] = useState<string | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, string | boolean>>({});
   const [selectedMethod, setSelectedMethod] = useState('');
 
+  useEffect(() => {
+    setLookupInput(slug);
+  }, [slug]);
+
   const fetchPaypoint = useCallback(async () => {
     if (!slug) {
-      navigate('/');
       return;
     }
 
     setIsLoading(true);
+    setLookupError(null);
     try {
       const response = await getPublicPaypoint(slug);
       setData(response);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to load PayPoint.');
-      navigate('/');
+      const message = error instanceof Error ? error.message : 'Unable to load PayPoint.';
+      toast.error(message);
+      setLookupError(message);
+      setData(null);
     } finally {
       setIsLoading(false);
     }
-  }, [slug, navigate]);
+  }, [slug]);
 
   useEffect(() => {
+    if (!slug) {
+      setData(null);
+      setIsLoading(false);
+      setLookupError(null);
+      return;
+    }
     fetchPaypoint();
-  }, [fetchPaypoint]);
+  }, [slug, fetchPaypoint]);
 
   const builder: PublicBuilderState | null = data?.paypoint.builder ?? null;
 
@@ -98,6 +114,20 @@ const PayPointPage: React.FC = () => {
       setTimeout(() => setCopySuccess(false), 2000);
     } catch {
       toast.error('Unable to copy link. Please copy manually.');
+    }
+  };
+
+  const handleCopyAccessCode = async () => {
+    const accessCode = data?.paypoint.accessCode;
+    if (!accessCode) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(accessCode);
+      setCodeCopySuccess(true);
+      setTimeout(() => setCodeCopySuccess(false), 2000);
+    } catch {
+      toast.error('Unable to copy the access code. Please copy manually.');
     }
   };
 
@@ -260,6 +290,101 @@ const PayPointPage: React.FC = () => {
     }
   };
 
+  const normalizeLookupInput = (value: string): string => {
+    if (!value) {
+      return '';
+    }
+    let normalized = value.trim();
+    if (!normalized) {
+      return '';
+    }
+    try {
+      const parsed = new URL(normalized);
+      normalized = parsed.pathname || '';
+    } catch {
+      normalized = normalized.replace(/^[a-z]+:\/\/[^/]+/i, '');
+    }
+    const paypointIndex = normalized.toLowerCase().indexOf('paypoint/');
+    if (paypointIndex > 0) {
+      normalized = normalized.slice(paypointIndex);
+    }
+    normalized = normalized.replace(/^paypoint\//i, '');
+    normalized = normalized.replace(/^\/+|\/+$/g, '');
+    return normalized;
+  };
+
+  const handleLookupSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const normalized = normalizeLookupInput(lookupInput);
+    if (!normalized) {
+      toast.error('Enter a PayPoint link or access code to continue.');
+      return;
+    }
+    const encodedPath = normalized
+      .split('/')
+      .filter(Boolean)
+      .map((segment) => encodeURIComponent(segment.trim()))
+      .join('/');
+    if (!encodedPath) {
+      toast.error('Enter a PayPoint link or access code to continue.');
+      return;
+    }
+    if (encodedPath === slug) {
+      fetchPaypoint();
+      return;
+    }
+    navigate(`/paypoint/${encodedPath}`);
+  };
+
+  const shouldShowLookup = !slug || (!!lookupError && !isLoading);
+
+  if (shouldShowLookup) {
+    return (
+      <div className="flex min-h-screen flex-col bg-slate-950 text-white">
+        <Header />
+        <main className="flex flex-1 items-center justify-center px-4 py-12">
+          <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-[0_25px_55px_rgba(15,23,42,0.4)] backdrop-blur">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/60">PayPoint Access</p>
+            <h1 className="mt-3 text-3xl font-semibold text-white">Open your PayPoint</h1>
+            <p className="mt-2 text-sm text-white/70">
+              Paste the shared link or enter the secure access code you received from your organizer.
+            </p>
+            {lookupError && (
+              <div className="mt-5 rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                {lookupError}
+              </div>
+            )}
+            <form onSubmit={handleLookupSubmit} className="mt-6 space-y-4 text-left">
+              <div>
+                <label htmlFor="paypoint-lookup" className="text-xs font-semibold uppercase tracking-wide text-white/60">
+                  Link or access code
+                </label>
+                <input
+                  id="paypoint-lookup"
+                  type="text"
+                  value={lookupInput}
+                  onChange={(event) => setLookupInput(event.target.value)}
+                  placeholder="e.g. PP-ABCD12 or https://mypaypoint.onrender.com/paypoint/your-link"
+                  className="mt-2 w-full rounded-2xl border border-white/15 bg-slate-900/50 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-indigo-400/60 focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 hover:brightness-110"
+              >
+                Find PayPoint
+              </button>
+            </form>
+            <p className="mt-5 text-xs text-white/60">
+              Tip: Ask your organizer for the PayPoint code if you can’t find their link.
+            </p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   if (isLoading || !data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
@@ -400,9 +525,24 @@ const PayPointPage: React.FC = () => {
                   {copySuccess ? <ClipboardCheck className="mr-1 h-3.5 w-3.5" /> : <Copy className="mr-1 h-3.5 w-3.5" />}
                   Copy link
                 </button>
+                <button
+                  onClick={handleCopyAccessCode}
+                  className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90"
+                  type="button"
+                >
+                  {codeCopySuccess ? <ClipboardCheck className="mr-1 h-3.5 w-3.5" /> : <KeyRound className="mr-1 h-3.5 w-3.5" />}
+                  Copy code
+                </button>
                 <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
                   {acceptedMethods.length} methods
                 </span>
+              </div>
+              <div className="mt-4 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-left">
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Access code</p>
+                <p className="mt-2 text-2xl font-semibold text-white">{data.paypoint.accessCode}</p>
+                <p className="mt-1 text-xs text-white/60">
+                  Payers can search for this code on mypaypoint.onrender.com/paypoint to open this page instantly.
+                </p>
               </div>
             </div>
 
